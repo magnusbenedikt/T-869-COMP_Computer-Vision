@@ -1,5 +1,4 @@
 import cv2 as cv
-import numpy as np
 import time
 
 # Find the brightest pixel
@@ -86,16 +85,16 @@ while(True):
     if x_red != -1 and y_red != -1:
         cv.circle(frame, (x_red, y_red), 10, (0, 0, 255), 2)
 
-    # Find the reddest and brightest pixels with double for loop
-    (x_red, y_red), (x_bright, y_bright) = find_reddest_and_brightest_pixel(frame)
+    # # Find the reddest and brightest pixels with double for loop
+    # (x_red, y_red), (x_bright, y_bright) = find_reddest_and_brightest_pixel(frame)
 
-    # # Mark the reddest pixel with a red circle
-    # if x_red != -1 and y_red != -1:
-    #     cv.circle(frame, (x_red, y_red), 10, (0, 0, 255), 2)
+    # Mark the reddest pixel with a red circle
+    if x_red != -1 and y_red != -1:
+        cv.circle(frame, (x_red, y_red), 10, (0, 0, 255), 2)
 
-    # # Mark the brightest pixel with a purple circle
-    # if x_bright != -1 and y_bright != -1:
-    #     cv.circle(frame, (x_bright, y_bright), 10, (255, 0, 255), 2)
+    # Mark the brightest pixel with a purple circle
+    if x_bright != -1 and y_bright != -1:
+        cv.circle(frame, (x_bright, y_bright), 10, (255, 0, 255), 2)
 
     # Calculate processing time in milliseconds
     processing_time = (time.time() - start_time) * 1000
