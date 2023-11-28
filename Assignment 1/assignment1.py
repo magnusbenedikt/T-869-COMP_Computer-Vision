@@ -15,13 +15,19 @@ def find_reddest_pixel(frame):
     # Split into color channels
     B, G, R = cv.split(frame)
     # Ensure red is dominant and above a threshold (e.g., 100 out of 255)
-    red_dominant = (R > G) & (R > B) & (R > 100)
+    red_dominant1 = cv.compare(R, G, cv.CMP_GT)
+    red_dominant2 = cv.compare(R, B, cv.CMP_GT)
+    red_dominant3 = cv.compare(R, 100, cv.CMP_GT)
+    red_dominant = cv.bitwise_and(red_dominant1, red_dominant2)
+    red_dominant = cv.bitwise_and(red_dominant, red_dominant3)
     # Calculate a more nuanced measure of redness
-    redness = R - (G + B) / 2
-    redness = redness * red_dominant  # Apply the red dominant mask
+    avg_GB = cv.divide(cv.add(G, B), 2)
+    redness = cv.subtract(R, avg_GB)
+    redness = cv.multiply(redness, cv.divide(red_dominant, 255))  # Apply the red dominant mask
     # Find the position of the reddest pixel
-    if np.any(redness):
-        y, x = np.unravel_index(np.argmax(redness), redness.shape)
+    minVal, maxVal, minLoc, maxLoc = cv.minMaxLoc(redness)
+    if maxVal > 0:
+        x, y = maxLoc
     else:
         x, y = -1, -1  # No sufficiently red pixel found
     return x, y
@@ -49,9 +55,9 @@ def find_reddest_and_brightest_pixel(frame):
     return reddest_pixel_coords, brightest_pixel_coords
 
 # MacBook Camera
-# cap = cv.VideoCapture(0)
+cap = cv.VideoCapture(0)
 # iPhone Camera
-cap = cv.VideoCapture(1)
+# cap = cv.VideoCapture(1)
 
 # Check if the webcam is opened correctly
 if not cap.isOpened():
@@ -69,27 +75,27 @@ while(True):
     # Start measuring processing time
     start_time = time.time()
 
-    ## Brightest and reddest pixel functions with OpenCV functions
+    # Brightest and reddest pixel functions with OpenCV functions
     # Find the brightest pixel
-    # x_bright, y_bright = find_brightest_pixel(frame)
-    # # Mark the brightest pixel with a purple circle
-    # cv.circle(frame, (x_bright, y_bright), 10, (255, 0, 255), 2)
+    x_bright, y_bright = find_brightest_pixel(frame)
+    # Mark the brightest pixel with a purple circle
+    cv.circle(frame, (x_bright, y_bright), 10, (255, 0, 255), 2)
     # Find the reddest pixel
-    # x_red, y_red = find_reddest_pixel(frame)
-    # # Mark the reddest pixel with a red circle
-    # if x_red != -1 and y_red != -1:
-    #     cv.circle(frame, (x_red, y_red), 10, (0, 0, 255), 2)
-
-    ## Find the reddest and brightest pixels with double for loop
-    (x_red, y_red), (x_bright, y_bright) = find_reddest_and_brightest_pixel(frame)
-
+    x_red, y_red = find_reddest_pixel(frame)
     # Mark the reddest pixel with a red circle
     if x_red != -1 and y_red != -1:
         cv.circle(frame, (x_red, y_red), 10, (0, 0, 255), 2)
 
-    # Mark the brightest pixel with a purple circle
-    if x_bright != -1 and y_bright != -1:
-        cv.circle(frame, (x_bright, y_bright), 10, (255, 0, 255), 2)
+    # Find the reddest and brightest pixels with double for loop
+    (x_red, y_red), (x_bright, y_bright) = find_reddest_and_brightest_pixel(frame)
+
+    # # Mark the reddest pixel with a red circle
+    # if x_red != -1 and y_red != -1:
+    #     cv.circle(frame, (x_red, y_red), 10, (0, 0, 255), 2)
+
+    # # Mark the brightest pixel with a purple circle
+    # if x_bright != -1 and y_bright != -1:
+    #     cv.circle(frame, (x_bright, y_bright), 10, (255, 0, 255), 2)
 
     # Calculate processing time in milliseconds
     processing_time = (time.time() - start_time) * 1000
