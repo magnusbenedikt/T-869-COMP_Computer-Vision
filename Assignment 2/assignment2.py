@@ -31,8 +31,8 @@ def draw_line_from_coefficients(img, line):
         y = int(-c / b)
         cv2.line(img, (0, y), (cols, y), (0, 0, 255), 2)
 
-# Custom RANSAC implementation for line fitting.
-def custom_ransac(edges, num_iterations, inlier_threshold, early_termination_threshold):
+# RANSAC implementation for line fitting.
+def ransac(edges, num_iterations, inlier_threshold, early_termination_threshold):
     max_inliers = []
     best_line = None
     for _ in range(num_iterations):
@@ -61,8 +61,8 @@ prev_ticks = cv2.getTickCount()
 k = 10  # Only consider every k-th point for RANSAC
 
 # Define Canny parameters
-lower_threshold = 110  # Lower threshold for Canny edge detection
-upper_threshold = 330  # Upper threshold for Canny edge detection
+lower_threshold = 90  # 50 Lower threshold for Canny edge detection
+upper_threshold = 180  # 200 Upper threshold for Canny edge detection
 
 while True:
     ret, frame = cap.read()
@@ -74,17 +74,18 @@ while True:
 
     # Resize and optionally preprocess the frame
     frame_resized = cv2.resize(frame, (new_width, new_height))  
-    frame_preprocessed = cv2.GaussianBlur(frame_resized, (3, 3), 1)
+    frame_preprocessed = cv2.GaussianBlur(frame_resized, (5, 5), 1)
+    frame_preprocessed = cv2.medianBlur(frame_preprocessed, 3)
 
     # Adjusted Canny Edge Detector
     edges = cv2.Canny(frame_preprocessed, lower_threshold, upper_threshold)
 
     # Get edge points and sample every k-th point
-    y_coords, x_coords = np.where(edges >= 255)
+    y_coords, x_coords = np.where(edges == 255)
     edge_points = list(zip(x_coords, y_coords))[::k]  # Sample every k-th point
 
-    if len(edge_points) > 10:  # Ensure enough points to apply RANSAC
-        best_line = custom_ransac(edge_points, num_iterations=300, inlier_threshold=0.25, early_termination_threshold=100)
+    if len(edge_points) > 50:  # Ensure enough points to apply RANSAC
+        best_line = ransac(edge_points, num_iterations=600, inlier_threshold=0.75, early_termination_threshold=400)
         if best_line is not None:
             draw_line_from_coefficients(frame_resized, best_line)
 
