@@ -58,7 +58,7 @@ tick_freq = cv2.getTickFrequency()
 prev_ticks = cv2.getTickCount()
 
 # Define RANSAC sampling parameter
-k = 10  # Only consider every k-th point for RANSAC
+k = 8  # Only consider every k-th point for RANSAC
 
 # Define Canny parameters
 lower_threshold = 90  # 50 Lower threshold for Canny edge detection
@@ -85,7 +85,7 @@ while True:
     edge_points = list(zip(x_coords, y_coords))[::k]  # Sample every k-th point
 
     if len(edge_points) > 50:  # Ensure enough points to apply RANSAC
-        best_line = ransac(edge_points, num_iterations=600, inlier_threshold=0.1, early_termination_threshold=400)
+        best_line = ransac(edge_points, num_iterations=600, inlier_threshold=1, early_termination_threshold=400)
         if best_line is not None:
             draw_line_from_coefficients(frame_resized, best_line)
 
