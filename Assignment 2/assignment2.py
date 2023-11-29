@@ -19,7 +19,7 @@ def line_from_points(p1, p2):
 # Draw a line on an image given its coefficients a, b, c (ax + by + c = 0)
 def draw_line_from_coefficients(img, line):
     a, b, c = line
-    cols, rows = img.shape[:2]
+    rows, cols = img.shape[:2]
     if a != 0 and b != 0:
         lefty = int((-c - a * 0) / b)
         righty = int((-c - a * cols) / b)
@@ -74,8 +74,8 @@ while True:
 
     # Resize and optionally preprocess the frame
     frame_resized = cv2.resize(frame, (new_width, new_height))  
-    frame_preprocessed = cv2.GaussianBlur(frame_resized, (5, 5), 1)
-    frame_preprocessed = cv2.medianBlur(frame_preprocessed, 3)
+    frame_preprocessed = cv2.GaussianBlur(frame_resized, (3, 3), 1)
+    frame_preprocessed = cv2.medianBlur(frame_preprocessed, 9)
 
     # Adjusted Canny Edge Detector
     edges = cv2.Canny(frame_preprocessed, lower_threshold, upper_threshold)
@@ -85,7 +85,7 @@ while True:
     edge_points = list(zip(x_coords, y_coords))[::k]  # Sample every k-th point
 
     if len(edge_points) > 50:  # Ensure enough points to apply RANSAC
-        best_line = ransac(edge_points, num_iterations=600, inlier_threshold=0.75, early_termination_threshold=400)
+        best_line = ransac(edge_points, num_iterations=600, inlier_threshold=0.1, early_termination_threshold=400)
         if best_line is not None:
             draw_line_from_coefficients(frame_resized, best_line)
 
